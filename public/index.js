@@ -1,9 +1,16 @@
 const vorgelagerteNetze = document.querySelector("#vorgelagertesNetz");
 const nachgelagerteNetze = document.querySelector("#nachgelagertesNetz");
 const lieferketten = document.querySelector("#lieferketten");
-const button = document.querySelector("#myButton");
+const startButton = document.querySelector("#startButton");
+const trashButton = document.querySelector("#trashButton");
 
-button.addEventListener("click", () => {
+trashButton.addEventListener("click", () => {
+   vorgelagerteNetze.value = "";
+   nachgelagerteNetze.value = "";
+   lieferketten.value = "";
+});
+
+startButton.addEventListener("click", () => {
    const vNetze = vorgelagerteNetze.value.split("\n");
    const nNetze = nachgelagerteNetze.value.split("\n");
 
@@ -14,7 +21,7 @@ button.addEventListener("click", () => {
       nNetze.pop();
    }
 
-   const original2D = _.zip(vNetze, nNetze);
+   const original2D = _.uniqWith(_.zip(vNetze, nNetze), _.isEqual);
 
    const ketteAufsplitten = kette => {
       const kettenende = _.last(kette);
@@ -22,8 +29,7 @@ button.addEventListener("click", () => {
       const neueKettenglieder = original2D.filter(el => el[0] === kettenende);
 
       if (neueKettenglieder.length) {
-         const vorderteilDerKette = _.initial(kette);
-         return neueKettenglieder.map(el => vorderteilDerKette.concat(el));
+         return neueKettenglieder.map(el => kette.concat(el[1]));
       } else {
          return kette;
       }
@@ -34,7 +40,7 @@ button.addEventListener("click", () => {
    const kennensatzAufsplitten = kennensatz => {
       for (const kette of kennensatz) {
          if (_.initial(kette).includes(_.last(kette))) {
-            ergebnis.push(kette.concat(["#####  Ringbeziehung  #####"]));
+            ergebnis.push(kette.concat("#####  Ringbeziehung  #####"));
          } else if (ketteAufsplitten(kette) === kette) {
             ergebnis.push(kette);
          } else {
@@ -44,6 +50,8 @@ button.addEventListener("click", () => {
    };
 
    kennensatzAufsplitten(original2D);
+
    const stringErgebnis = ergebnis.map(el => el.join(" => ")).join("\n");
+
    lieferketten.value = stringErgebnis;
 });
